@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // URL do Webhook do n8n (pode ser ajustada via variável de ambiente)
 // Substitua pelo IP/URL correto se o n8n não estiver rodando no mesmo localhost ou na mesma porta
-const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://n8n.dalmada.eu/webhook/d56367ef-6196-4b87-8c29-d469a9988d6c';
+const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://n8n.dalmada.eu/webhook/chatway-testando';
 const INSTANCE_NAME = 'TEST_INSTANCE';
 const PHONE_NUMBER = '5511999999999'; // Número fictício simulado
 
