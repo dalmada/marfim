@@ -64,6 +64,19 @@ app.post(['/chat/getBase64FromMediaMessage/:instance', '/chat-api/get-media-base
     res.json({ base64: "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" }); // base64 audio mudo mínimo
 });
 
+// --- Rota para enganar a validação de credencial do n8n ---
+app.get(['/instance/fetchInstances'], (req, res) => {
+    console.log(`[Mock Evolution] Validação de credencial recebida.`);
+    res.json([
+        {
+            instance: {
+                instanceName: INSTANCE_NAME,
+                status: "open"
+            }
+        }
+    ]);
+});
+
 // --- Catch-all para outras chamadas (presence, read-messages, etc) ---
 app.use((req, res) => {
     if (!req.url.startsWith('/socket.io')) {
