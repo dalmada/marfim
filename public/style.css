@@ -4,9 +4,9 @@
     --chat-bg: #ffffff;
     --text-main: #0f172a;
     --text-muted: #64748b;
-    --primary: #3b82f6;
-    --primary-hover: #2563eb;
-    --user-msg: #3b82f6;
+    --primary: #282828;
+    --primary-hover: #1a1a1a;
+    --user-msg: #282828;
     --agent-msg: #f1f5f9;
     --border: #e2e8f0;
     --danger: #ef4444;
@@ -287,9 +287,7 @@ body {
     font-size: 2rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, #3b82f6, #10b981);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--primary);
 }
 
 .home-header p {
