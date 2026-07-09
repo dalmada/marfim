@@ -1,14 +1,14 @@
 /* CSS Variables for theming and dark mode */
 :root {
-    --bg-color: #0f172a;
-    --chat-bg: #1e293b;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    --bg-color: #f8fafc;
+    --chat-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
     --primary: #3b82f6;
     --primary-hover: #2563eb;
     --user-msg: #3b82f6;
-    --agent-msg: #334155;
-    --border: #334155;
+    --agent-msg: #f1f5f9;
+    --border: #e2e8f0;
     --danger: #ef4444;
 }
 
@@ -275,6 +275,12 @@ body {
 .home-header {
     text-align: center;
     margin-bottom: 3rem;
+}
+
+.marfim-logo {
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 1.5rem;
 }
 
 .home-header h1 {
