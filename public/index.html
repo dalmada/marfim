@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ambiente de Teste</title>
+    <title>Central de Agentes</title>
     <meta name="description" content="Ambiente online para testes do agente IA N8N">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,18 +14,38 @@
 
 <body>
     <a href="#chat-messages" class="skip-link">Ir para mensagens</a>
-    <main class="chat-container">
+    
+    <!-- Tela Inicial: Grid de Agentes -->
+    <main class="home-container" id="home-view">
+        <header class="home-header">
+            <h1>Central de Agentes de IA</h1>
+            <p>Selecione um assistente para iniciar o atendimento</p>
+        </header>
+        
+        <section class="agents-grid" id="agents-grid">
+            <!-- Os cartões dos agentes serão injetados aqui via JS -->
+            <div class="loading-agents">Carregando agentes...</div>
+        </section>
+    </main>
+
+    <!-- Tela do Chat (Oculta por padrão) -->
+    <main class="chat-container" id="chat-view" style="display: none;">
         <header class="chat-header">
-            <h1>Agente de IA - ChatWay</h1>
-            <span class="status">Online (Conectado ao n8n)</span>
+            <button class="icon-btn back-btn" id="back-btn" aria-label="Voltar para a Home">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+            <img src="" alt="Avatar do Agente" class="agent-avatar" id="current-agent-avatar" style="display: none;">
+            <div class="agent-info">
+                <h1 id="current-agent-name">Agente de IA</h1>
+                <span class="status">Online (Conectado ao n8n)</span>
+            </div>
         </header>
 
         <section class="chat-messages" id="chat-messages" aria-live="polite" aria-label="Histórico de mensagens">
-            <article class="message agent">
-                <div class="message-content">
-                    Olá! Já está tudo conectado, pode começar a conversar.
-                </div>
-            </article>
+            <!-- Mensagens aparecerão aqui -->
         </section>
 
         <footer class="chat-input-area">
