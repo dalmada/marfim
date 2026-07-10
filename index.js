@@ -21,27 +21,27 @@ app.use(express.static(path.join(__dirname, 'public')));
 const agents = [
     {
         id: "vera",
-        name: "Vera Antigolpes",
+        name: "Vera Anti-Golpes",
         role: "Orientador Anti-Golpes",
         avatar: "assets/vera-antigolpes.png",
         instanceName: "VERA-ANTIGOLPES",
         webhookUrl: "https://n8n.dalmada.eu/webhook/vera-homolog" // Webhook no n8n
     },
     {
-        id: "suporte",
-        name: "Suporte Técnico",
-        role: "Atendimento ao cliente",
-        avatar: "https://ui-avatars.com/api/?name=Suporte&background=E53E3E&color=fff",
-        instanceName: "SUPORTE_INSTANCE",
-        webhookUrl: "https://n8n.dalmada.eu/webhook/chatway-testando" // Pode ser o mesmo ou diferente
+        id: "vera",
+        name: "Vera Anti-Golpes",
+        role: "Orientador Anti-Golpes",
+        avatar: "assets/vera-antigolpes.png",
+        instanceName: "VERA-ANTIGOLPES",
+        webhookUrl: "https://n8n.dalmada.eu/webhook/vera-homolog" // Pode ser o mesmo ou diferente
     },
     {
-        id: "marfim",
-        name: "ChatWay Bot",
-        role: "Assistente de Demonstração",
-        avatar: "https://ui-avatars.com/api/?name=ChatWay&background=10b981&color=fff",
-        instanceName: "TEST_INSTANCE",
-        webhookUrl: "https://n8n.dalmada.eu/webhook/chatway-testando"
+        id: "vera",
+        name: "Vera Anti-Golpes",
+        role: "Orientador Anti-Golpes",
+        avatar: "assets/vera-antigolpes.png",
+        instanceName: "VERA-ANTIGOLPES",
+        webhookUrl: "https://n8n.dalmada.eu/webhook/vera-homolog"
     }
 ];
 
