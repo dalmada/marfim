@@ -68,7 +68,10 @@ loginForm.addEventListener('submit', async (e) => {
                 homeView.style.display = 'flex';
                 loadAgents();
             } else {
-                alert('Erro ao fazer login.');
+                alert('Erro ao fazer login: ' + (data.error || 'Erro desconhecido'));
+                const btn = document.getElementById('btn-login');
+                btn.textContent = 'Entrar';
+                btn.disabled = false;
             }
         } catch (err) {
             console.error(err);

@@ -60,7 +60,7 @@ app.post('/api/login', async (req, res) => {
         res.json({ success: true, phone, name });
     } catch (err) {
         console.error('Erro no login:', err);
-        res.status(500).json({ error: 'Erro no servidor' });
+        res.status(500).json({ error: err.message || JSON.stringify(err) });
     }
 });
 
