@@ -94,6 +94,7 @@ body {
     margin-top: 4px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
 }
 
@@ -377,9 +378,11 @@ body {
 .agent-info {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 .agent-info h1 {
     font-size: 1.1rem;
     margin: 0;
+    text-align: center;
 }
