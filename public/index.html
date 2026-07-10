@@ -20,8 +20,30 @@
 <body>
     <a href="#chat-messages" class="skip-link">Ir para mensagens</a>
     
+    <!-- Tela de Login -->
+    <main class="login-container" id="login-view">
+        <section class="login-card">
+            <img src="assets/marfim-logo.png" alt="Marfim Logo" class="marfim-logo">
+            <h1>Bem-vindo!</h1>
+            <p>Para iniciar o atendimento, por favor identifique-se.</p>
+            
+            <form id="login-form" class="login-form">
+                <fieldset class="form-group">
+                    <label for="user-name">Nome completo</label>
+                    <input type="text" id="user-name" required placeholder="Digite seu nome" autocomplete="name">
+                </fieldset>
+                <fieldset class="form-group">
+                    <label for="user-phone">Número do WhatsApp</label>
+                    <input type="tel" id="user-phone" required placeholder="Ex: 5511999999999" pattern="[0-9]{10,15}" autocomplete="tel">
+                    <small>Apenas números, com DDI e DDD (ex: 5511999999999)</small>
+                </fieldset>
+                <button type="submit" class="btn primary-btn" id="btn-login">Entrar</button>
+            </form>
+        </section>
+    </main>
+
     <!-- Tela Inicial: Grid de Agentes -->
-    <main class="home-container" id="home-view">
+    <main class="home-container" id="home-view" style="display: none;">
         <header class="home-header">
             <img src="assets/marfim-logo.png" alt="Marfim Logo" class="marfim-logo">
             <h1>Central de<br class="mobile-break"> Agentes de IA</h1>

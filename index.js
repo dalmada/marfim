@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const axios = require('axios');
 const path = require('path');
+const dbPromise = require('./database');
 
 const app = express();
 const server = http.createServer(app);
@@ -19,8 +20,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 const mediaCache = new Map();
 
 // --- Configuração dos Agentes ---
-// Você pode adicionar quantos agentes quiser aqui.
-// O "instanceName" é o que o n8n vai receber para saber com qual agente você está falando.
 const agents = [
     {
         id: "vera",
@@ -48,7 +47,42 @@ const agents = [
     }
 ];
 
-const PHONE_NUMBER = '5511999999999'; // Número fictício simulado
+// --- Rota da API para Login ---
+app.post('/api/login', async (req, res) => {
+    try {
+        const { phone, name } = req.body;
+        if (!phone || !name) {
+            return res.status(400).json({ error: 'Phone and name are required' });
+        }
+        
+        const db = await dbPromise;
+        await db.run(
+            `INSERT INTO users (phone, name) VALUES (?, ?)
+             ON CONFLICT(phone) DO UPDATE SET name=excluded.name`,
+            [phone, name]
+        );
+        res.json({ success: true, phone, name });
+    } catch (err) {
+        console.error('Erro no login:', err);
+        res.status(500).json({ error: 'Erro no servidor' });
+    }
+});
+
+// --- Rota da API para Histórico de Mensagens ---
+app.get('/api/messages/:phone/:agentId', async (req, res) => {
+    try {
+        const { phone, agentId } = req.params;
+        const db = await dbPromise;
+        const messages = await db.all(
+            `SELECT * FROM messages WHERE phone = ? AND agent_id = ? ORDER BY timestamp ASC`,
+            [phone, agentId]
+        );
+        res.json(messages);
+    } catch (err) {
+        console.error('Erro ao buscar mensagens:', err);
+        res.status(500).json({ error: 'Erro no servidor' });
+    }
+});
 
 // --- Rota da API para o Frontend pegar a lista de agentes ---
 app.get('/api/agents', (req, res) => {
@@ -56,15 +90,34 @@ app.get('/api/agents', (req, res) => {
 });
 
 // --- Rota Mock para a Evolution API: Enviar Texto ---
-app.post(['/message/sendText/:instance', '/messages-api/send-text/:instance', '/messages-api/send-text'], (req, res) => {
+app.post(['/message/sendText/:instance', '/messages-api/send-text/:instance', '/messages-api/send-text'], async (req, res) => {
     const instance = req.params.instance;
     const textMessage = req.body.text || (req.body.options && req.body.options.text) || req.body.messageText || (req.body.message && req.body.message.text);
+    
+    // Tenta descobrir o destinatário a partir do payload que o n8n envia
+    let number = req.body.number || req.body.remoteJid || req.body.jid;
+    if (number && number.includes('@')) {
+        number = number.split('@')[0];
+    }
 
-    console.log(`[Mock Evolution] Mensagem de TEXTO recebida do n8n para a instância: ${instance}`);
+    console.log(`[Mock Evolution] Mensagem de TEXTO recebida do n8n para a instância: ${instance}, destino: ${number}`);
 
-    if (instance) {
-        // Envia apenas para o usuário que está na sala dessa instância
-        io.to(instance).emit('agent_message', { type: 'text', content: textMessage || req.body });
+    if (number) {
+        try {
+            const db = await dbPromise;
+            const msgId = `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+            const agent = agents.find(a => a.instanceName === instance);
+            const agentId = agent ? agent.id : instance;
+
+            await db.run(
+                `INSERT INTO messages (id, phone, agent_id, sender_type, message_type, content) VALUES (?, ?, ?, ?, ?, ?)`,
+                [msgId, number, agentId, 'agent', 'text', typeof textMessage === 'object' ? JSON.stringify(textMessage) : textMessage]
+            );
+        } catch (err) {
+            console.error('Erro ao salvar mensagem do agente:', err);
+        }
+
+        io.to(`${instance}_${number}`).emit('agent_message', { type: 'text', content: textMessage || req.body });
     } else {
         io.emit('agent_message', { type: 'text', content: textMessage || req.body });
     }
@@ -73,14 +126,33 @@ app.post(['/message/sendText/:instance', '/messages-api/send-text/:instance', '/
 });
 
 // --- Rota Mock para a Evolution API: Enviar Áudio ---
-app.post(['/message/sendWhatsAppAudio/:instance', '/messages-api/send-audio/:instance', '/messages-api/send-audio'], (req, res) => {
+app.post(['/message/sendWhatsAppAudio/:instance', '/messages-api/send-audio/:instance', '/messages-api/send-audio'], async (req, res) => {
     const instance = req.params.instance;
     const audioData = req.body.audio || req.body.media || req.body.base64;
 
-    console.log(`[Mock Evolution] Mensagem de ÁUDIO recebida do n8n para a instância: ${instance}`);
+    let number = req.body.number || req.body.remoteJid || req.body.jid;
+    if (number && number.includes('@')) {
+        number = number.split('@')[0];
+    }
 
-    if (instance) {
-        io.to(instance).emit('agent_message', { type: 'audio', content: audioData, originalBody: req.body });
+    console.log(`[Mock Evolution] Mensagem de ÁUDIO recebida do n8n para a instância: ${instance}, destino: ${number}`);
+
+    if (number) {
+        try {
+            const db = await dbPromise;
+            const msgId = `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+            const agent = agents.find(a => a.instanceName === instance);
+            const agentId = agent ? agent.id : instance;
+
+            await db.run(
+                `INSERT INTO messages (id, phone, agent_id, sender_type, message_type, content) VALUES (?, ?, ?, ?, ?, ?)`,
+                [msgId, number, agentId, 'agent', 'audio', audioData]
+            );
+        } catch (err) {
+            console.error('Erro ao salvar mensagem do agente (áudio):', err);
+        }
+
+        io.to(`${instance}_${number}`).emit('agent_message', { type: 'audio', content: audioData, originalBody: req.body });
     } else {
         io.emit('agent_message', { type: 'audio', content: audioData, originalBody: req.body });
     }
@@ -118,7 +190,6 @@ app.get(['/instance/fetchInstances'], (req, res) => {
         }
     }));
 
-    // Se a array estiver vazia por algum motivo
     if (instancesList.length === 0) {
         instancesList.push({ instance: { instanceName: "DEFAULT", status: "open" } });
     }
@@ -126,7 +197,7 @@ app.get(['/instance/fetchInstances'], (req, res) => {
     res.json(instancesList);
 });
 
-// --- Catch-all para outras chamadas (presence, read-messages, etc) ---
+// --- Catch-all para outras chamadas ---
 app.use((req, res) => {
     if (!req.url.startsWith('/socket.io')) {
         console.log(`[Mock Evolution] Rota acessada: ${req.method} ${req.url}`);
@@ -134,22 +205,19 @@ app.use((req, res) => {
     }
 });
 
-
 // --- Configuração Socket.io para o Web Chat ---
 io.on('connection', (socket) => {
     console.log('User connected to Web Chat:', socket.id);
 
-    // Quando o usuário abrir o chat de um agente específico, ele entra na "sala" daquela instância
     socket.on('join_agent', (data) => {
-        if (data && data.instanceName) {
-            socket.join(data.instanceName);
-            console.log(`Socket ${socket.id} entrou na sala da instância: ${data.instanceName}`);
+        if (data && data.instanceName && data.userPhone) {
+            const roomName = `${data.instanceName}_${data.userPhone}`;
+            socket.join(roomName);
+            console.log(`Socket ${socket.id} entrou na sala: ${roomName}`);
         }
     });
 
-    // Quando o usuário enviar uma mensagem do frontend
     socket.on('user_message', async (data) => {
-        // Precisamos encontrar qual agente o usuário está falando
         const agent = agents.find(a => a.id === data.agentId);
 
         if (!agent) {
@@ -157,29 +225,39 @@ io.on('connection', (socket) => {
             return socket.emit('message_sent', { success: false, error: "Agente não encontrado." });
         }
 
-        console.log(`Mensagem recebida para o agente ${agent.name} (${agent.instanceName}):`, data);
+        if (!data.userPhone || !data.userName) {
+            return socket.emit('message_sent', { success: false, error: "Usuário não autenticado." });
+        }
+
+        console.log(`Mensagem recebida para o agente ${agent.name} (${agent.instanceName}) de ${data.userPhone}:`, data);
 
         try {
             const msgId = `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
-            // Se for áudio, salva no cache para a rota getBase64FromMediaMessage (expira em 10 minutos)
             if (data.audioBase64) {
                 mediaCache.set(msgId, data.audioBase64);
                 setTimeout(() => mediaCache.delete(msgId), 10 * 60 * 1000);
             }
 
+            // Salva a mensagem no banco de dados
+            const db = await dbPromise;
+            await db.run(
+                `INSERT INTO messages (id, phone, agent_id, sender_type, message_type, content) VALUES (?, ?, ?, ?, ?, ?)`,
+                [msgId, data.userPhone, agent.id, 'user', data.audioBase64 ? 'audio' : 'text', data.audioBase64 || data.text]
+            );
+
             // Montar payload simulando o evento 'messages.upsert' da Evolution API
             const webhookPayload = {
-                event: "messages.upsert", // Essencial para o n8n identificar o evento
+                event: "messages.upsert", 
                 instance: agent.instanceName,
-                server_url: `https://app.marfim.org`, // URL fixa da hostinger para os retornos no n8n
+                server_url: `https://app.marfim.org`, 
                 data: {
                     key: {
                         id: msgId,
-                        remoteJid: `${PHONE_NUMBER}@s.whatsapp.net`,
+                        remoteJid: `${data.userPhone}@s.whatsapp.net`,
                         fromMe: false
                     },
-                    pushName: "Test User Web",
+                    pushName: data.userName,
                     messageTimestamp: Math.floor(Date.now() / 1000),
                     messageType: data.audioBase64 ? "audioMessage" : "conversation",
                     message: data.audioBase64 ? {
@@ -201,7 +279,6 @@ io.on('connection', (socket) => {
             const response = await axios.post(agent.webhookUrl, webhookPayload);
             console.log('[Web Chat -> n8n] Resposta do Webhook:', response.status);
 
-            // Confirmação para o frontend
             socket.emit('message_sent', { success: true });
 
         } catch (error) {

@@ -1,9 +1,14 @@
 const socket = io();
 
+const loginView = document.getElementById('login-view');
 const homeView = document.getElementById('home-view');
 const chatView = document.getElementById('chat-view');
 const agentsGrid = document.getElementById('agents-grid');
 const backBtn = document.getElementById('back-btn');
+
+const loginForm = document.getElementById('login-form');
+const userNameInput = document.getElementById('user-name');
+const userPhoneInput = document.getElementById('user-phone');
 
 const chatMessages = document.getElementById('chat-messages');
 const chatForm = document.getElementById('chat-form');
@@ -17,6 +22,65 @@ let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
 let currentAgent = null;
+
+// User Session
+let userSession = JSON.parse(localStorage.getItem('userSession'));
+
+// --- INIT APP ---
+function initApp() {
+    if (userSession && userSession.phone && userSession.name) {
+        loginView.style.display = 'none';
+        homeView.style.display = 'flex';
+        loadAgents();
+    } else {
+        loginView.style.display = 'flex';
+        homeView.style.display = 'none';
+        chatView.style.display = 'none';
+    }
+}
+
+// --- LOGIN LOGIC ---
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = userNameInput.value.trim();
+    let phone = userPhoneInput.value.trim();
+
+    // Clean non-digits
+    phone = phone.replace(/\D/g, '');
+
+    if (name && phone) {
+        try {
+            const btn = document.getElementById('btn-login');
+            btn.textContent = 'Entrando...';
+            btn.disabled = true;
+
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, name })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                userSession = { phone: data.phone, name: data.name };
+                localStorage.setItem('userSession', JSON.stringify(userSession));
+                loginView.style.display = 'none';
+                homeView.style.display = 'flex';
+                loadAgents();
+            } else {
+                alert('Erro ao fazer login.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Erro de conexão ao fazer login.');
+        } finally {
+            const btn = document.getElementById('btn-login');
+            btn.textContent = 'Entrar';
+            btn.disabled = false;
+        }
+    }
+});
+
 
 // --- HOME VIEW LOGIC ---
 
@@ -52,7 +116,7 @@ function renderAgents(agents) {
 
 // --- NAVIGATION LOGIC ---
 
-function openAgentChat(agent) {
+async function openAgentChat(agent) {
     currentAgent = agent;
 
     // Update Header
@@ -60,21 +124,57 @@ function openAgentChat(agent) {
     currentAgentAvatar.src = agent.avatar;
     currentAgentAvatar.style.display = 'block';
 
-    // Clear chat
-    chatMessages.innerHTML = `
-        <article class="message agent">
-            <div class="message-content">
-                Olá! Sou o <b>${agent.name}</b>. Como posso te ajudar hoje?
-            </div>
-        </article>
-    `;
-
-    // Enter socket room
-    socket.emit('join_agent', { instanceName: agent.instanceName });
-
     // Switch views
     homeView.style.display = 'none';
     chatView.style.display = 'flex';
+
+    // Show loading
+    chatMessages.innerHTML = '<div class="loading-agents">Carregando histórico...</div>';
+
+    // Enter socket room specific for this user and agent
+    socket.emit('join_agent', { 
+        instanceName: agent.instanceName, 
+        userPhone: userSession.phone 
+    });
+
+    // Fetch history
+    try {
+        const res = await fetch(`/api/messages/${userSession.phone}/${agent.id}`);
+        const history = await res.json();
+        
+        chatMessages.innerHTML = ''; // Clear loading
+
+        if (history.length === 0) {
+            chatMessages.innerHTML = `
+                <article class="message agent">
+                    <div class="message-content">
+                        Olá, <b>${userSession.name.split(' ')[0]}</b>! Sou o <b>${agent.name}</b>. Como posso te ajudar hoje?
+                    </div>
+                </article>
+            `;
+        } else {
+            history.forEach(msg => {
+                const type = msg.message_type;
+                let content = msg.content;
+                if (type === 'text') {
+                    try {
+                        const parsed = JSON.parse(msg.content);
+                        if (typeof parsed === 'object') {
+                            content = JSON.stringify(parsed);
+                        } else {
+                            content = msg.content;
+                        }
+                    } catch(e) { }
+                }
+                addMessageToUI(type, content, msg.sender_type, false);
+            });
+            scrollToBottom();
+        }
+
+    } catch (err) {
+        console.error("Erro ao carregar histórico:", err);
+        chatMessages.innerHTML = '<div class="loading-agents" style="color: var(--danger)">Erro ao carregar o histórico de mensagens.</div>';
+    }
 }
 
 backBtn.addEventListener('click', () => {
@@ -89,7 +189,7 @@ function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function addMessageToUI(type, content, sender = 'agent') {
+function addMessageToUI(type, content, sender = 'agent', scroll = true) {
     const article = document.createElement('article');
     article.className = `message ${sender}`;
 
@@ -115,19 +215,21 @@ function addMessageToUI(type, content, sender = 'agent') {
 
     article.appendChild(div);
     chatMessages.appendChild(article);
-    scrollToBottom();
+    if (scroll) scrollToBottom();
 }
 
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (!currentAgent) return;
+    if (!currentAgent || !userSession) return;
 
     const text = messageInput.value.trim();
 
     if (text) {
         socket.emit('user_message', {
             agentId: currentAgent.id,
-            text
+            text,
+            userPhone: userSession.phone,
+            userName: userSession.name
         });
 
         addMessageToUI('text', text, 'user');
@@ -208,7 +310,9 @@ function sendAudioMessage(audioBlob) {
         socket.emit('user_message', { 
             agentId: currentAgent.id,
             audioBase64: rawBase64,
-            mimeType: audioBlob.type
+            mimeType: audioBlob.type,
+            userPhone: userSession.phone,
+            userName: userSession.name
         });
 
         addMessageToUI('audio', base64data, 'user');
@@ -216,4 +320,4 @@ function sendAudioMessage(audioBlob) {
 }
 
 // Inicializa a aplicação
-loadAgents();
+initApp();
