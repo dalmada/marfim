@@ -170,6 +170,7 @@ io.on('connection', (socket) => {
 
             // Montar payload simulando o evento 'messages.upsert' da Evolution API
             const webhookPayload = {
+                event: "messages.upsert", // Essencial para o n8n identificar o evento
                 instance: agent.instanceName,
                 server_url: `https://app.marfim.org`, // URL fixa da hostinger para os retornos no n8n
                 data: {
@@ -180,18 +181,17 @@ io.on('connection', (socket) => {
                     },
                     pushName: "Test User Web",
                     messageTimestamp: Math.floor(Date.now() / 1000),
-                    message: {
-                        conversation: data.text || "",
-                        // Se for áudio:
-                        ...(data.audioBase64 ? {
-                            audioMessage: {
-                                ptt: true, // Indica que é áudio gravado (voice note)
-                                url: "",
-                                mimetype: "audio/ogg; codecs=opus",
-                                base64: data.audioBase64 // Evolution às vezes envia diretamente aqui
-                            },
+                    messageType: data.audioBase64 ? "audioMessage" : "conversation",
+                    message: data.audioBase64 ? {
+                        audioMessage: {
+                            ptt: true,
+                            url: "",
+                            mimetype: "audio/ogg; codecs=opus",
                             base64: data.audioBase64
-                        } : {})
+                        },
+                        base64: data.audioBase64
+                    } : {
+                        conversation: data.text || ""
                     }
                 }
             };
