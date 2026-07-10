@@ -186,7 +186,7 @@ io.on('connection', (socket) => {
                         audioMessage: {
                             ptt: true,
                             url: "",
-                            mimetype: "audio/ogg; codecs=opus",
+                            mimetype: data.mimeType || "audio/ogg; codecs=opus",
                             base64: data.audioBase64
                         },
                         base64: data.audioBase64

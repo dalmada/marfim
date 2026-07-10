@@ -35,7 +35,7 @@ async function loadAgents() {
 // Render the grid
 function renderAgents(agents) {
     agentsGrid.innerHTML = ''; // Clear loading
-    
+
     agents.forEach(agent => {
         const card = document.createElement('article');
         card.className = 'agent-card';
@@ -44,7 +44,7 @@ function renderAgents(agents) {
             <h2>${agent.name}</h2>
             <p>${agent.role}</p>
         `;
-        
+
         card.addEventListener('click', () => openAgentChat(agent));
         agentsGrid.appendChild(card);
     });
@@ -54,12 +54,12 @@ function renderAgents(agents) {
 
 function openAgentChat(agent) {
     currentAgent = agent;
-    
+
     // Update Header
     currentAgentName.textContent = agent.name;
     currentAgentAvatar.src = agent.avatar;
     currentAgentAvatar.style.display = 'block';
-    
+
     // Clear chat
     chatMessages.innerHTML = `
         <article class="message agent">
@@ -68,10 +68,10 @@ function openAgentChat(agent) {
             </div>
         </article>
     `;
-    
+
     // Enter socket room
     socket.emit('join_agent', { instanceName: agent.instanceName });
-    
+
     // Switch views
     homeView.style.display = 'none';
     chatView.style.display = 'flex';
@@ -92,7 +92,7 @@ function scrollToBottom() {
 function addMessageToUI(type, content, sender = 'agent') {
     const article = document.createElement('article');
     article.className = `message ${sender}`;
-    
+
     const div = document.createElement('div');
     div.className = 'message-content';
 
@@ -112,7 +112,7 @@ function addMessageToUI(type, content, sender = 'agent') {
         }
         div.appendChild(audio);
     }
-    
+
     article.appendChild(div);
     chatMessages.appendChild(article);
     scrollToBottom();
@@ -121,15 +121,15 @@ function addMessageToUI(type, content, sender = 'agent') {
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
     if (!currentAgent) return;
-    
+
     const text = messageInput.value.trim();
-    
+
     if (text) {
-        socket.emit('user_message', { 
+        socket.emit('user_message', {
             agentId: currentAgent.id,
-            text 
+            text
         });
-        
+
         addMessageToUI('text', text, 'user');
         messageInput.value = '';
     }
@@ -151,7 +151,7 @@ socket.on('message_sent', (response) => {
 
 recordBtn.addEventListener('click', async () => {
     if (!currentAgent) return;
-    
+
     if (!isRecording) {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -174,7 +174,7 @@ function startRecording(stream) {
     });
 
     mediaRecorder.addEventListener('stop', () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
         sendAudioMessage(audioBlob);
         stream.getTracks().forEach(track => track.stop());
     });
@@ -204,12 +204,13 @@ function sendAudioMessage(audioBlob) {
     reader.onloadend = () => {
         const base64data = reader.result;
         const rawBase64 = base64data.split(',')[1];
-        
+
         socket.emit('user_message', { 
             agentId: currentAgent.id,
-            audioBase64: rawBase64 
+            audioBase64: rawBase64,
+            mimeType: audioBlob.type
         });
-        
+
         addMessageToUI('audio', base64data, 'user');
     };
 }
