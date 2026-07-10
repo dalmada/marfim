@@ -208,7 +208,7 @@ body {
     color: var(--text-main);
     padding: 12px 16px;
     border-radius: 8px;
-    font-size: 0.95rem;
+    font-size: 16px; /* 16px is required to prevent iOS Safari auto-zoom */
     transition: none;
     outline: none;
 }
