@@ -81,6 +81,7 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 10;
+    flex-shrink: 0;
 }
 
 .chat-header h1 {
@@ -373,6 +374,8 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 
 .agent-info {
