@@ -97,8 +97,9 @@ app.post(['/message/sendText/:instance', '/messages-api/send-text/:instance', '/
     if (number) {
         try {
             const msgId = `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-            const agent = agents.find(a => a.instanceName === instance);
+            const agent = agents.find(a => a.instanceName.toLowerCase() === instance.toLowerCase() || a.id.toLowerCase() === instance.toLowerCase());
             const agentId = agent ? agent.id : instance;
+            const emitInstance = agent ? agent.instanceName : instance;
 
             await database.saveMessage({
                 id: msgId,
@@ -112,7 +113,7 @@ app.post(['/message/sendText/:instance', '/messages-api/send-text/:instance', '/
             console.error('Erro ao salvar mensagem do agente:', err);
         }
 
-        io.to(`${instance}_${number}`).emit('agent_message', { type: 'text', content: textMessage || req.body });
+        io.to(`${(agents.find(a => a.instanceName.toLowerCase() === instance.toLowerCase() || a.id.toLowerCase() === instance.toLowerCase()) || {instanceName: instance}).instanceName}_${number}`).emit('agent_message', { type: 'text', content: textMessage || req.body });
     } else {
         io.emit('agent_message', { type: 'text', content: textMessage || req.body });
     }
@@ -135,7 +136,7 @@ app.post(['/message/sendWhatsAppAudio/:instance', '/messages-api/send-audio/:ins
     if (number) {
         try {
             const msgId = `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-            const agent = agents.find(a => a.instanceName === instance);
+            const agent = agents.find(a => a.instanceName.toLowerCase() === instance.toLowerCase() || a.id.toLowerCase() === instance.toLowerCase());
             const agentId = agent ? agent.id : instance;
 
             await database.saveMessage({
@@ -150,7 +151,7 @@ app.post(['/message/sendWhatsAppAudio/:instance', '/messages-api/send-audio/:ins
             console.error('Erro ao salvar mensagem do agente (áudio):', err);
         }
 
-        io.to(`${instance}_${number}`).emit('agent_message', { type: 'audio', content: audioData, originalBody: req.body });
+        io.to(`${(agents.find(a => a.instanceName.toLowerCase() === instance.toLowerCase() || a.id.toLowerCase() === instance.toLowerCase()) || {instanceName: instance}).instanceName}_${number}`).emit('agent_message', { type: 'audio', content: audioData, originalBody: req.body });
     } else {
         io.emit('agent_message', { type: 'audio', content: audioData, originalBody: req.body });
     }
