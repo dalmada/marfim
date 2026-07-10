@@ -1,14 +1,14 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || 'https://fallback.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY || 'fallback_key';
 
-if (!supabaseUrl || !supabaseKey) {
+if (supabaseUrl === 'https://fallback.supabase.co') {
     console.warn("⚠️ Variáveis SUPABASE_URL ou SUPABASE_KEY não encontradas no .env. O banco não funcionará corretamente.");
 }
 
-const supabase = createClient(supabaseUrl || '', supabaseKey || '');
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 module.exports = {
     async saveUser(phone, name) {
