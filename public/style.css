@@ -281,6 +281,52 @@ body {
     overflow-y: auto;
 }
 
+/* --- USER PROFILE BAR --- */
+.user-profile-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.user-profile-bar .user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.user-profile-bar .user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+.user-profile-bar .user-phone {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.logout-btn {
+    background-color: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: var(--danger);
+    color: white;
+}
+
 .home-header {
     text-align: center;
     margin-bottom: 3rem;

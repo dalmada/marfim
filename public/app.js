@@ -18,6 +18,10 @@ const sendBtn = document.getElementById('send-btn');
 const currentAgentName = document.getElementById('current-agent-name');
 const currentAgentAvatar = document.getElementById('current-agent-avatar');
 
+const displayUserName = document.getElementById('display-user-name');
+const displayUserPhone = document.getElementById('display-user-phone');
+const logoutBtn = document.getElementById('logout-btn');
+
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
@@ -26,17 +30,38 @@ let currentAgent = null;
 // User Session
 let userSession = JSON.parse(localStorage.getItem('userSession'));
 
+function updateProfileBar() {
+    if (userSession) {
+        displayUserName.textContent = userSession.name;
+        // Opcional: formatar telefone ex: (11) 99999-9999
+        let p = userSession.phone;
+        if (p.length === 13 && p.startsWith('55')) {
+            p = `+55 (${p.slice(2,4)}) ${p.slice(4,9)}-${p.slice(9)}`;
+        }
+        displayUserPhone.textContent = p;
+    }
+}
+
 // --- INIT APP ---
 function initApp() {
     if (userSession && userSession.phone && userSession.name) {
         loginView.style.display = 'none';
         homeView.style.display = 'flex';
+        updateProfileBar();
         loadAgents();
     } else {
         loginView.style.display = 'flex';
         homeView.style.display = 'none';
         chatView.style.display = 'none';
     }
+}
+
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('userSession');
+        userSession = null;
+        initApp();
+    });
 }
 
 // --- LOGIN LOGIC ---
@@ -66,6 +91,7 @@ loginForm.addEventListener('submit', async (e) => {
                 localStorage.setItem('userSession', JSON.stringify(userSession));
                 loginView.style.display = 'none';
                 homeView.style.display = 'flex';
+                updateProfileBar();
                 loadAgents();
             } else {
                 alert('Erro ao fazer login: ' + (data.error || 'Erro desconhecido'));
