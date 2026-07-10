@@ -74,7 +74,7 @@ function openAgentChat(agent) {
     
     // Switch views
     homeView.style.display = 'none';
-    chatView.style.display = 'block';
+    chatView.style.display = 'flex';
 }
 
 backBtn.addEventListener('click', () => {
