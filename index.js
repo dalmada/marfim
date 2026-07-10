@@ -20,12 +20,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 // O "instanceName" é o que o n8n vai receber para saber com qual agente você está falando.
 const agents = [
     {
-        id: "vendas",
-        name: "Agente de Vendas",
-        role: "Especialista em fechamentos",
-        avatar: "https://ui-avatars.com/api/?name=Vendas&background=0D8ABC&color=fff",
-        instanceName: "VENDAS_INSTANCE",
-        webhookUrl: "https://n8n.dalmada.eu/webhook/chatway-testando" // Webhook no n8n
+        id: "vera",
+        name: "Vera Antigolpes",
+        role: "Orientador Anti-Golpes",
+        avatar: "assets/vera-antigolpes.png",
+        instanceName: "VERA-ANTIGOLPES",
+        webhookUrl: "https://n8n.dalmada.eu/webhook/vera-homolog" // Webhook no n8n
     },
     {
         id: "suporte",
@@ -56,7 +56,7 @@ app.get('/api/agents', (req, res) => {
 app.post(['/message/sendText/:instance', '/messages-api/send-text/:instance', '/messages-api/send-text'], (req, res) => {
     const instance = req.params.instance;
     const textMessage = req.body.text || (req.body.options && req.body.options.text) || req.body.messageText || (req.body.message && req.body.message.text);
-    
+
     console.log(`[Mock Evolution] Mensagem de TEXTO recebida do n8n para a instância: ${instance}`);
 
     if (instance) {
@@ -99,12 +99,12 @@ app.get(['/instance/fetchInstances'], (req, res) => {
             status: "open"
         }
     }));
-    
+
     // Se a array estiver vazia por algum motivo
     if (instancesList.length === 0) {
-        instancesList.push({ instance: { instanceName: "DEFAULT", status: "open" }});
+        instancesList.push({ instance: { instanceName: "DEFAULT", status: "open" } });
     }
-    
+
     res.json(instancesList);
 });
 
@@ -133,7 +133,7 @@ io.on('connection', (socket) => {
     socket.on('user_message', async (data) => {
         // Precisamos encontrar qual agente o usuário está falando
         const agent = agents.find(a => a.id === data.agentId);
-        
+
         if (!agent) {
             console.error('Agente não encontrado ou ID não fornecido:', data.agentId);
             return socket.emit('message_sent', { success: false, error: "Agente não encontrado." });
