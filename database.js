@@ -19,8 +19,8 @@ if (!supabaseUrl || supabaseUrl === 'undefined') {
     } catch(e) {}
 }
 
-const supabaseUrlFinal = supabaseUrl || 'https://fallback.supabase.co';
-const supabaseKeyFinal = supabaseKey || 'fallback_key';
+const supabaseUrlFinal = supabaseUrl || 'https://snwsrqggkuuxcfhskoby.supabase.co';
+const supabaseKeyFinal = supabaseKey || 'sb_publishable_fxMwM-Y3Xtua9W3WL7pm4A_xxRFwBi-';
 
 if (supabaseUrlFinal === 'https://fallback.supabase.co') {
     console.warn("⚠️ Variáveis SUPABASE_URL ou SUPABASE_KEY não encontradas.");
@@ -33,9 +33,6 @@ const supabase = createClient(supabaseUrlFinal, supabaseKeyFinal, {
 
 module.exports = {
     async saveUser(phone, name) {
-        if (supabaseUrlFinal === 'https://fallback.supabase.co') {
-            throw new Error("SUPABASE_URL está vazio. O arquivo .env não foi lido.");
-        }
         
         const { error } = await supabase
             .from('users')
