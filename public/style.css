@@ -26,7 +26,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -59,7 +59,7 @@ body {
 .chat-container {
     width: 100%;
     max-width: 900px;
-    height: 100vh;
+    height: 100dvh;
     background-color: var(--chat-bg);
     background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
     background-repeat: repeat;
@@ -188,6 +188,9 @@ body {
     padding: 10px 16px;
     background: var(--header-bg);
     border-top: none;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
 }
 
 .input-group {
@@ -258,7 +261,7 @@ body {
 
 @media (max-width: 640px) {
     .chat-container {
-        height: 100vh;
+        height: 100dvh;
         max-width: 100%;
         border-radius: 0;
         border: none;
@@ -269,7 +272,7 @@ body {
 .home-container {
     width: 100%;
     max-width: 900px;
-    height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     padding: 2rem;
@@ -291,7 +294,7 @@ body {
     font-size: 2rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: var(--primary);
+    color: #282828;
 }
 
 .home-header p {
