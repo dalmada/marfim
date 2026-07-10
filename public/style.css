@@ -59,6 +59,7 @@ body {
 .chat-container {
     width: 100%;
     max-width: 900px;
+    height: 100vh;
     height: 100dvh;
     background-color: var(--chat-bg);
     background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
@@ -188,9 +189,8 @@ body {
     padding: 10px 16px;
     background: var(--header-bg);
     border-top: none;
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
+    margin-top: auto;
+    width: 100%;
 }
 
 .input-group {
