@@ -1,32 +1,42 @@
-const sqlite3 = require('sqlite3');
-const { open } = require('sqlite');
+const fs = require('fs').promises;
 const path = require('path');
 
-const dbPromise = open({
-    filename: path.join(__dirname, 'database.sqlite'),
-    driver: sqlite3.Database
-}).then(async (db) => {
-    await db.exec(`
-        CREATE TABLE IF NOT EXISTS users (
-            phone TEXT PRIMARY KEY,
-            name TEXT NOT NULL
-        );
+const dbPath = path.join(__dirname, 'database.json');
 
-        CREATE TABLE IF NOT EXISTS messages (
-            id TEXT PRIMARY KEY,
-            phone TEXT NOT NULL,
-            agent_id TEXT NOT NULL,
-            sender_type TEXT NOT NULL, -- 'user' or 'agent'
-            message_type TEXT NOT NULL, -- 'text' or 'audio'
-            content TEXT NOT NULL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-        );
-    `);
-    console.log('✅ SQLite Database initialized.');
-    return db;
-}).catch(err => {
-    console.error('❌ Failed to initialize SQLite Database:', err);
-    throw err;
-});
+async function getDB() {
+    try {
+        const data = await fs.readFile(dbPath, 'utf8');
+        return JSON.parse(data);
+    } catch (err) {
+        return { users: [], messages: [] };
+    }
+}
 
-module.exports = dbPromise;
+async function saveDB(db) {
+    await fs.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf8');
+}
+
+module.exports = {
+    async saveUser(phone, name) {
+        const db = await getDB();
+        const user = db.users.find(u => u.phone === phone);
+        if (user) {
+            user.name = name;
+        } else {
+            db.users.push({ phone, name });
+        }
+        await saveDB(db);
+    },
+    async getMessages(phone, agent_id) {
+        const db = await getDB();
+        return db.messages
+            .filter(m => m.phone === phone && m.agent_id === agent_id)
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    },
+    async saveMessage(msg) {
+        const db = await getDB();
+        msg.timestamp = msg.timestamp || new Date().toISOString();
+        db.messages.push(msg);
+        await saveDB(db);
+    }
+};

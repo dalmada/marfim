@@ -4,7 +4,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const axios = require('axios');
 const path = require('path');
-const dbPromise = require('./database');
+const database = require('./database');
 
 const app = express();
 const server = http.createServer(app);
@@ -55,12 +55,7 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ error: 'Phone and name are required' });
         }
         
-        const db = await dbPromise;
-        await db.run(
-            `INSERT INTO users (phone, name) VALUES (?, ?)
-             ON CONFLICT(phone) DO UPDATE SET name=excluded.name`,
-            [phone, name]
-        );
+        await database.saveUser(phone, name);
         res.json({ success: true, phone, name });
     } catch (err) {
         console.error('Erro no login:', err);
@@ -72,11 +67,7 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/messages/:phone/:agentId', async (req, res) => {
     try {
         const { phone, agentId } = req.params;
-        const db = await dbPromise;
-        const messages = await db.all(
-            `SELECT * FROM messages WHERE phone = ? AND agent_id = ? ORDER BY timestamp ASC`,
-            [phone, agentId]
-        );
+        const messages = await database.getMessages(phone, agentId);
         res.json(messages);
     } catch (err) {
         console.error('Erro ao buscar mensagens:', err);
@@ -104,15 +95,18 @@ app.post(['/message/sendText/:instance', '/messages-api/send-text/:instance', '/
 
     if (number) {
         try {
-            const db = await dbPromise;
             const msgId = `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
             const agent = agents.find(a => a.instanceName === instance);
             const agentId = agent ? agent.id : instance;
 
-            await db.run(
-                `INSERT INTO messages (id, phone, agent_id, sender_type, message_type, content) VALUES (?, ?, ?, ?, ?, ?)`,
-                [msgId, number, agentId, 'agent', 'text', typeof textMessage === 'object' ? JSON.stringify(textMessage) : textMessage]
-            );
+            await database.saveMessage({
+                id: msgId,
+                phone: number,
+                agent_id: agentId,
+                sender_type: 'agent',
+                message_type: 'text',
+                content: typeof textMessage === 'object' ? JSON.stringify(textMessage) : textMessage
+            });
         } catch (err) {
             console.error('Erro ao salvar mensagem do agente:', err);
         }
@@ -139,15 +133,18 @@ app.post(['/message/sendWhatsAppAudio/:instance', '/messages-api/send-audio/:ins
 
     if (number) {
         try {
-            const db = await dbPromise;
             const msgId = `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
             const agent = agents.find(a => a.instanceName === instance);
             const agentId = agent ? agent.id : instance;
 
-            await db.run(
-                `INSERT INTO messages (id, phone, agent_id, sender_type, message_type, content) VALUES (?, ?, ?, ?, ?, ?)`,
-                [msgId, number, agentId, 'agent', 'audio', audioData]
-            );
+            await database.saveMessage({
+                id: msgId,
+                phone: number,
+                agent_id: agentId,
+                sender_type: 'agent',
+                message_type: 'audio',
+                content: audioData
+            });
         } catch (err) {
             console.error('Erro ao salvar mensagem do agente (áudio):', err);
         }
@@ -164,7 +161,6 @@ app.post(['/message/sendWhatsAppAudio/:instance', '/messages-api/send-audio/:ins
 app.post(['/chat/getBase64FromMediaMessage/:instance', '/chat-api/get-media-base64/:instance', '/chat-api/get-media-base64'], (req, res) => {
     let msgId = null;
     
-    // Tenta extrair o ID da mensagem do body enviado pelo n8n
     if (req.body && req.body.message && req.body.message.key) {
         msgId = req.body.message.key.id;
     } else if (req.body && req.body.key) {
@@ -172,17 +168,14 @@ app.post(['/chat/getBase64FromMediaMessage/:instance', '/chat-api/get-media-base
     }
 
     if (msgId && mediaCache.has(msgId)) {
-        console.log(`[Mock Evolution] Retornando áudio real para a mensagem ${msgId}`);
         res.json({ base64: mediaCache.get(msgId) });
     } else {
-        console.log(`[Mock Evolution] Áudio não encontrado no cache. Retornando áudio mudo fallback.`);
         res.json({ base64: "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" }); // base64 audio mudo mínimo
     }
 });
 
 // --- Rota para enganar a validação de credencial do n8n ---
 app.get(['/instance/fetchInstances'], (req, res) => {
-    console.log(`[Mock Evolution] Validação de credencial recebida.`);
     const instancesList = agents.map(agent => ({
         instance: {
             instanceName: agent.instanceName,
@@ -200,7 +193,6 @@ app.get(['/instance/fetchInstances'], (req, res) => {
 // --- Catch-all para outras chamadas ---
 app.use((req, res) => {
     if (!req.url.startsWith('/socket.io')) {
-        console.log(`[Mock Evolution] Rota acessada: ${req.method} ${req.url}`);
         res.json({ success: true, message: "Mocked response" });
     }
 });
@@ -221,15 +213,12 @@ io.on('connection', (socket) => {
         const agent = agents.find(a => a.id === data.agentId);
 
         if (!agent) {
-            console.error('Agente não encontrado ou ID não fornecido:', data.agentId);
             return socket.emit('message_sent', { success: false, error: "Agente não encontrado." });
         }
 
         if (!data.userPhone || !data.userName) {
             return socket.emit('message_sent', { success: false, error: "Usuário não autenticado." });
         }
-
-        console.log(`Mensagem recebida para o agente ${agent.name} (${agent.instanceName}) de ${data.userPhone}:`, data);
 
         try {
             const msgId = `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -239,14 +228,17 @@ io.on('connection', (socket) => {
                 setTimeout(() => mediaCache.delete(msgId), 10 * 60 * 1000);
             }
 
-            // Salva a mensagem no banco de dados
-            const db = await dbPromise;
-            await db.run(
-                `INSERT INTO messages (id, phone, agent_id, sender_type, message_type, content) VALUES (?, ?, ?, ?, ?, ?)`,
-                [msgId, data.userPhone, agent.id, 'user', data.audioBase64 ? 'audio' : 'text', data.audioBase64 || data.text]
-            );
+            // Salva a mensagem
+            await database.saveMessage({
+                id: msgId,
+                phone: data.userPhone,
+                agent_id: agent.id,
+                sender_type: 'user',
+                message_type: data.audioBase64 ? 'audio' : 'text',
+                content: data.audioBase64 || data.text
+            });
 
-            // Montar payload simulando o evento 'messages.upsert' da Evolution API
+            // Montar payload
             const webhookPayload = {
                 event: "messages.upsert", 
                 instance: agent.instanceName,
@@ -274,26 +266,20 @@ io.on('connection', (socket) => {
                 }
             };
 
-            // Enviar para o Webhook específico deste Agente no n8n
-            console.log(`[Web Chat -> n8n] Enviando para: ${agent.webhookUrl}`);
             const response = await axios.post(agent.webhookUrl, webhookPayload);
-            console.log('[Web Chat -> n8n] Resposta do Webhook:', response.status);
-
             socket.emit('message_sent', { success: true });
 
         } catch (error) {
-            console.error('[Web Chat -> n8n] Erro ao chamar Webhook do n8n:', error.message);
+            console.error('[Web Chat -> n8n] Erro ao chamar Webhook:', error.message);
             socket.emit('message_sent', { success: false, error: error.message });
         }
     });
 
-    socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
-    });
+    socket.on('disconnect', () => {});
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`✅ Web Chat Server rodando em http://localhost:${PORT}`);
-    console.log(`🔧 Servindo interface Multi-Agentes na porta ${PORT}`);
+    console.log(`🔧 Usando JSON Database local para histórico.`);
 });
