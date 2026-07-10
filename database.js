@@ -1,42 +1,60 @@
-const fs = require('fs').promises;
-const path = require('path');
+require('dotenv').config();
+const { createClient } = require('@supabase/supabase-js');
 
-const dbPath = path.join(__dirname, 'database.json');
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
-async function getDB() {
-    try {
-        const data = await fs.readFile(dbPath, 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        return { users: [], messages: [] };
-    }
+if (!supabaseUrl || !supabaseKey) {
+    console.warn("⚠️ Variáveis SUPABASE_URL ou SUPABASE_KEY não encontradas no .env. O banco não funcionará corretamente.");
 }
 
-async function saveDB(db) {
-    await fs.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf8');
-}
+const supabase = createClient(supabaseUrl || '', supabaseKey || '');
 
 module.exports = {
     async saveUser(phone, name) {
-        const db = await getDB();
-        const user = db.users.find(u => u.phone === phone);
-        if (user) {
-            user.name = name;
-        } else {
-            db.users.push({ phone, name });
+        const { error } = await supabase
+            .from('users')
+            .upsert({ phone, name });
+
+        if (error) {
+            console.error('Erro ao salvar usuário no Supabase:', error.message);
+            throw error;
         }
-        await saveDB(db);
     },
+
     async getMessages(phone, agent_id) {
-        const db = await getDB();
-        return db.messages
-            .filter(m => m.phone === phone && m.agent_id === agent_id)
-            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('phone', phone)
+            .eq('agent_id', agent_id)
+            .order('timestamp', { ascending: true });
+
+        if (error) {
+            console.error('Erro ao buscar histórico no Supabase:', error.message);
+            throw error;
+        }
+
+        return data || [];
     },
+
     async saveMessage(msg) {
-        const db = await getDB();
-        msg.timestamp = msg.timestamp || new Date().toISOString();
-        db.messages.push(msg);
-        await saveDB(db);
+        const payload = {
+            id: msg.id,
+            phone: msg.phone,
+            agent_id: msg.agent_id,
+            sender_type: msg.sender_type,
+            message_type: msg.message_type,
+            content: msg.content
+        };
+
+        const { error } = await supabase
+            .from('messages')
+            .insert(payload);
+
+        if (error) {
+            console.error('Erro ao salvar mensagem no Supabase:', error.message);
+            throw error;
+        }
     }
 };
