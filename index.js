@@ -15,6 +15,9 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Cache temporário para áudios enviados (para a rota getBase64FromMediaMessage)
+const mediaCache = new Map();
+
 // --- Configuração dos Agentes ---
 // Você pode adicionar quantos agentes quiser aqui.
 // O "instanceName" é o que o n8n vai receber para saber com qual agente você está falando.
@@ -87,7 +90,22 @@ app.post(['/message/sendWhatsAppAudio/:instance', '/messages-api/send-audio/:ins
 
 // --- Rota Mock para a Evolution API: Get Media Base64 (usado para o whisper transcriber) ---
 app.post(['/chat/getBase64FromMediaMessage/:instance', '/chat-api/get-media-base64/:instance', '/chat-api/get-media-base64'], (req, res) => {
-    res.json({ base64: "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" }); // base64 audio mudo mínimo
+    let msgId = null;
+    
+    // Tenta extrair o ID da mensagem do body enviado pelo n8n
+    if (req.body && req.body.message && req.body.message.key) {
+        msgId = req.body.message.key.id;
+    } else if (req.body && req.body.key) {
+        msgId = req.body.key.id;
+    }
+
+    if (msgId && mediaCache.has(msgId)) {
+        console.log(`[Mock Evolution] Retornando áudio real para a mensagem ${msgId}`);
+        res.json({ base64: mediaCache.get(msgId) });
+    } else {
+        console.log(`[Mock Evolution] Áudio não encontrado no cache. Retornando áudio mudo fallback.`);
+        res.json({ base64: "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" }); // base64 audio mudo mínimo
+    }
 });
 
 // --- Rota para enganar a validação de credencial do n8n ---
@@ -142,13 +160,21 @@ io.on('connection', (socket) => {
         console.log(`Mensagem recebida para o agente ${agent.name} (${agent.instanceName}):`, data);
 
         try {
+            const msgId = `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+            // Se for áudio, salva no cache para a rota getBase64FromMediaMessage (expira em 10 minutos)
+            if (data.audioBase64) {
+                mediaCache.set(msgId, data.audioBase64);
+                setTimeout(() => mediaCache.delete(msgId), 10 * 60 * 1000);
+            }
+
             // Montar payload simulando o evento 'messages.upsert' da Evolution API
             const webhookPayload = {
                 instance: agent.instanceName,
                 server_url: `https://app.marfim.org`, // URL fixa da hostinger para os retornos no n8n
                 data: {
                     key: {
-                        id: `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        id: msgId,
                         remoteJid: `${PHONE_NUMBER}@s.whatsapp.net`,
                         fromMe: false
                     },
@@ -161,8 +187,10 @@ io.on('connection', (socket) => {
                             audioMessage: {
                                 ptt: true, // Indica que é áudio gravado (voice note)
                                 url: "",
-                                mimetype: "audio/ogg; codecs=opus"
-                            }
+                                mimetype: "audio/ogg; codecs=opus",
+                                base64: data.audioBase64 // Evolution às vezes envia diretamente aqui
+                            },
+                            base64: data.audioBase64
                         } : {})
                     }
                 }
