@@ -1,17 +1,42 @@
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
+const path = require('path');
+const nodeFetch = require('node-fetch');
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://fallback.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY || 'fallback_key';
+let supabaseUrl = process.env.SUPABASE_URL;
+let supabaseKey = process.env.SUPABASE_KEY;
 
-if (supabaseUrl === 'https://fallback.supabase.co') {
-    console.warn("⚠️ Variáveis SUPABASE_URL ou SUPABASE_KEY não encontradas no .env. O banco não funcionará corretamente.");
+// Fallback de leitura manual caso o dotenv falhe na Hostinger
+if (!supabaseUrl || supabaseUrl === 'undefined') {
+    try {
+        const envPath = path.join(__dirname, '.env');
+        const envFile = fs.readFileSync(envPath, 'utf8');
+        const urlMatch = envFile.match(/SUPABASE_URL=(.*)/);
+        const keyMatch = envFile.match(/SUPABASE_KEY=(.*)/);
+        if (urlMatch) supabaseUrl = urlMatch[1].trim();
+        if (keyMatch) supabaseKey = keyMatch[1].trim();
+    } catch(e) {}
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrlFinal = supabaseUrl || 'https://fallback.supabase.co';
+const supabaseKeyFinal = supabaseKey || 'fallback_key';
+
+if (supabaseUrlFinal === 'https://fallback.supabase.co') {
+    console.warn("⚠️ Variáveis SUPABASE_URL ou SUPABASE_KEY não encontradas.");
+}
+
+// Instanciando com node-fetch para contornar bug de IPv6/DNS do Node 18 na Hostinger
+const supabase = createClient(supabaseUrlFinal, supabaseKeyFinal, {
+    global: { fetch: nodeFetch }
+});
 
 module.exports = {
     async saveUser(phone, name) {
+        if (supabaseUrlFinal === 'https://fallback.supabase.co') {
+            throw new Error("SUPABASE_URL está vazio. O arquivo .env não foi lido.");
+        }
+        
         const { error } = await supabase
             .from('users')
             .upsert({ phone, name });
