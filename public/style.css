@@ -386,3 +386,13 @@ body {
     margin: 0;
     text-align: center;
 }
+
+.mobile-break {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-break {
+        display: block;
+    }
+}
