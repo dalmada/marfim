@@ -20,7 +20,7 @@ if (!supabaseUrl || supabaseUrl === 'undefined') {
 }
 
 const supabaseUrlFinal = supabaseUrl || 'https://snwsrqggkuuxcfhskoby.supabase.co';
-const supabaseKeyFinal = supabaseKey || 'sb_publishable_fxMwM-Y3Xtua9W3WL7pm4A_xxRFwBi-';
+const supabaseKeyFinal = supabaseKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNud3NycWdna3V1eGNmaHNrb2J5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjI3MDIzNCwiZXhwIjoyMDk3ODQ2MjM0fQ.qFjgsvcdkwDrQ1jQIaVueEAWwVDBjf6wi6Yi_HY66sE';
 
 if (supabaseUrlFinal === 'https://fallback.supabase.co') {
     console.warn("⚠️ Variáveis SUPABASE_URL ou SUPABASE_KEY não encontradas.");
