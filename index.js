@@ -241,10 +241,14 @@ io.on('connection', (socket) => {
             });
 
             // Montar payload
+            const host = socket.handshake.headers.host || 'app.marfim.org';
+            const protocol = socket.handshake.headers['x-forwarded-proto'] || (host.includes('localhost') ? 'http' : 'https');
+            const dynamicServerUrl = `${protocol}://${host}`;
+
             const webhookPayload = {
                 event: "messages.upsert",
                 instance: agent.instanceName,
-                server_url: `https://app.marfim.org`,
+                server_url: dynamicServerUrl,
                 data: {
                     key: {
                         id: msgId,

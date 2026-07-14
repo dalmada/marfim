@@ -240,6 +240,11 @@ function addMessageToUI(type, content, sender = 'agent', scroll = true) {
             audio.src = `data:audio/mp4;base64,${content}`;
         }
         div.appendChild(audio);
+    if (sender === 'user') {
+        const meta = document.createElement('div');
+        meta.className = 'message-meta';
+        meta.innerHTML = `<svg viewBox="0 0 16 11" height="11" width="16" preserveAspectRatio="xMidYMid meet" class="read-ticks"><path d="M11.804 1.341a.5.5 0 0 1 .15.358.5.5 0 0 1-.15.358L5.59 8.27l-2.85-2.85a.5.5 0 1 1 .708-.707l2.142 2.142 5.506-5.506a.5.5 0 0 1 .708 0zm3.456 0a.5.5 0 0 1 .15.358.5.5 0 0 1-.15.358L9.046 8.27 7.74 6.963l1.815-1.815 5.505-5.506a.5.5 0 0 1 .708 0z" fill="#53bdeb"></path></svg>`;
+        div.appendChild(meta);
     }
 
     article.appendChild(div);

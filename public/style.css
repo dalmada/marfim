@@ -171,6 +171,9 @@ body {
     color: var(--text-main);
     border-bottom-right-radius: 4px;
     box-shadow: 0 1px 0.5px rgba(11,20,26,.13);
+    position: relative;
+    padding-bottom: 20px;
+    padding-right: 30px;
 }
 
 .message.agent .message-content {
@@ -538,4 +541,16 @@ body {
 
 .primary-btn:hover {
     background-color: var(--primary-hover);
+}
+
+.message-meta {
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.read-ticks {
+    opacity: 0.9;
 }
