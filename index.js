@@ -39,12 +39,12 @@ const agents = [
         webhookUrl: "https://n8n.dalmada.eu/webhook/nati-homolog" // Pode ser o mesmo ou diferente
     },
     {
-        id: "vera",
-        name: "Vera Anti-Golpes",
-        role: "Orientador Anti-Golpes",
-        avatar: "assets/vera-antigolpes.png",
-        instanceName: "VERA-ANTIGOLPES",
-        webhookUrl: "https://n8n.dalmada.eu/webhook/vera-homolog"
+        id: "luma",
+        name: "Luma | Aconselhadora emocional",
+        role: "Aconselhadora emocional",
+        avatar: "assets/luma.webp",
+        instanceName: "LUMA-ACONSELHADORA",
+        webhookUrl: "https://n8n.dalmada.eu/webhook/luma-homolog" // Webhook no n8n
     }
 ];
 
