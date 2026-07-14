@@ -31,12 +31,12 @@ const agents = [
         webhookUrl: "https://n8n.dalmada.eu/webhook/vera-homolog" // Webhook no n8n
     },
     {
-        id: "vera",
-        name: "Vera Anti-Golpes",
-        role: "Orientador Anti-Golpes",
-        avatar: "assets/vera-antigolpes.png",
-        instanceName: "VERA-ANTIGOLPES",
-        webhookUrl: "https://n8n.dalmada.eu/webhook/vera-homolog" // Pode ser o mesmo ou diferente
+        id: "nati",
+        name: "Nati - Consultora Nutricional",
+        role: "Consultora Nutricional",
+        avatar: "assets/nati.webp",
+        instanceName: "NATI-CONSULTORA",
+        webhookUrl: "https://n8n.dalmada.eu/webhook/nati-homolog" // Pode ser o mesmo ou diferente
     },
     {
         id: "vera",
@@ -55,7 +55,7 @@ app.post('/api/login', async (req, res) => {
         if (!phone || !name) {
             return res.status(400).json({ error: 'Phone and name are required' });
         }
-        
+
         await database.saveUser(phone, name);
         res.json({ success: true, phone, name });
     } catch (err) {
@@ -85,7 +85,7 @@ app.get('/api/agents', (req, res) => {
 app.post(['/message/sendText/:instance', '/messages-api/send-text/:instance', '/messages-api/send-text'], async (req, res) => {
     const instance = req.params.instance;
     const textMessage = req.body.text || (req.body.options && req.body.options.text) || req.body.messageText || (req.body.message && req.body.message.text);
-    
+
     // Tenta descobrir o destinatário a partir do payload que o n8n envia
     let number = req.body.number || req.body.remoteJid || req.body.jid;
     if (number && number.includes('@')) {
@@ -113,7 +113,7 @@ app.post(['/message/sendText/:instance', '/messages-api/send-text/:instance', '/
             console.error('Erro ao salvar mensagem do agente:', err);
         }
 
-        io.to(`${(agents.find(a => a.instanceName.toLowerCase() === instance.toLowerCase() || a.id.toLowerCase() === instance.toLowerCase()) || {instanceName: instance}).instanceName}_${number}`).emit('agent_message', { type: 'text', content: textMessage || req.body });
+        io.to(`${(agents.find(a => a.instanceName.toLowerCase() === instance.toLowerCase() || a.id.toLowerCase() === instance.toLowerCase()) || { instanceName: instance }).instanceName}_${number}`).emit('agent_message', { type: 'text', content: textMessage || req.body });
     } else {
         io.emit('agent_message', { type: 'text', content: textMessage || req.body });
     }
@@ -151,7 +151,7 @@ app.post(['/message/sendWhatsAppAudio/:instance', '/messages-api/send-audio/:ins
             console.error('Erro ao salvar mensagem do agente (áudio):', err);
         }
 
-        io.to(`${(agents.find(a => a.instanceName.toLowerCase() === instance.toLowerCase() || a.id.toLowerCase() === instance.toLowerCase()) || {instanceName: instance}).instanceName}_${number}`).emit('agent_message', { type: 'audio', content: audioData, originalBody: req.body });
+        io.to(`${(agents.find(a => a.instanceName.toLowerCase() === instance.toLowerCase() || a.id.toLowerCase() === instance.toLowerCase()) || { instanceName: instance }).instanceName}_${number}`).emit('agent_message', { type: 'audio', content: audioData, originalBody: req.body });
     } else {
         io.emit('agent_message', { type: 'audio', content: audioData, originalBody: req.body });
     }
@@ -162,7 +162,7 @@ app.post(['/message/sendWhatsAppAudio/:instance', '/messages-api/send-audio/:ins
 // --- Rota Mock para a Evolution API: Get Media Base64 (usado para o whisper transcriber) ---
 app.post(['/chat/getBase64FromMediaMessage/:instance', '/chat-api/get-media-base64/:instance', '/chat-api/get-media-base64'], (req, res) => {
     let msgId = null;
-    
+
     if (req.body && req.body.message && req.body.message.key) {
         msgId = req.body.message.key.id;
     } else if (req.body && req.body.key) {
@@ -242,9 +242,9 @@ io.on('connection', (socket) => {
 
             // Montar payload
             const webhookPayload = {
-                event: "messages.upsert", 
+                event: "messages.upsert",
                 instance: agent.instanceName,
-                server_url: `https://app.marfim.org`, 
+                server_url: `https://app.marfim.org`,
                 data: {
                     key: {
                         id: msgId,
@@ -277,7 +277,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('disconnect', () => {});
+    socket.on('disconnect', () => { });
 });
 
 const PORT = process.env.PORT || 3000;
