@@ -218,6 +218,23 @@ function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+function formatWhatsAppText(text) {
+    if (!text) return '';
+    // Prevent basic HTML injection
+    let formatted = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    // Monospace: ```text```
+    formatted = formatted.replace(/```([\s\S]*?)```/g, '<code>$1</code>');
+    // Bold: *text*
+    formatted = formatted.replace(/\*([^\*]+)\*/g, '<strong>$1</strong>');
+    // Italic: _text_
+    formatted = formatted.replace(/_([^_]+)_/g, '<em>$1</em>');
+    // Strikethrough: ~text~
+    formatted = formatted.replace(/~([^~]+)~/g, '<del>$1</del>');
+    // Newlines
+    formatted = formatted.replace(/\n/g, '<br>');
+    return formatted;
+}
+
 function addMessageToUI(type, content, sender = 'agent', scroll = true) {
     const article = document.createElement('article');
     article.className = `message ${sender}`;
@@ -230,7 +247,7 @@ function addMessageToUI(type, content, sender = 'agent', scroll = true) {
         if (typeof content === 'object') {
             textContent = JSON.stringify(content);
         }
-        div.innerHTML = textContent.replace(/\n/g, '<br>');
+        div.innerHTML = formatWhatsAppText(textContent);
     } else if (type === 'audio') {
         const audio = document.createElement('audio');
         audio.controls = true;

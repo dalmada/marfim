@@ -554,3 +554,11 @@ body {
 .read-ticks {
     opacity: 0.9;
 }
+
+code {
+    font-family: monospace;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
