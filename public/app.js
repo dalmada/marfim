@@ -240,6 +240,8 @@ function addMessageToUI(type, content, sender = 'agent', scroll = true) {
             audio.src = `data:audio/mp4;base64,${content}`;
         }
         div.appendChild(audio);
+    }
+    
     if (sender === 'user') {
         const meta = document.createElement('div');
         meta.className = 'message-meta';
