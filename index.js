@@ -36,7 +36,7 @@ const agents = [
         role: "Consultora Nutricional",
         avatar: "assets/nati.webp",
         instanceName: "NATI-CONSULTORA",
-        webhookUrl: "https://n8n.dalmada.eu/webhook/nati-homolog" // Pode ser o mesmo ou diferente
+        webhookUrl: "https://n8n.dalmada.eu/webhook/nati-homolog" // Webhook no n8n
     },
     {
         id: "luma",
@@ -45,6 +45,14 @@ const agents = [
         avatar: "assets/luma.webp",
         instanceName: "LUMA-ACONSELHADORA",
         webhookUrl: "https://n8n.dalmada.eu/webhook/luma-homolog" // Webhook no n8n
+    },
+    {
+        id: "meca",
+        name: "Meca - Orientador Veicular",
+        role: "Orientador Veicular",
+        avatar: "assets/meca.png",
+        instanceName: "MECA-ORIENTADOR",
+        webhookUrl: "https://n8n.dalmada.eu/webhook/meca-homolog" // Webhook no n8n
     }
 ];
 
