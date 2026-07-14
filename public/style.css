@@ -276,7 +276,7 @@ body {
 /* --- HOME VIEW (Grid) --- */
 .home-container {
     width: 100%;
-    max-width: 900px;
+    max-width: 1200px;
     height: 100dvh;
     display: flex;
     flex-direction: column;
