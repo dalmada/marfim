@@ -40,7 +40,7 @@ const agents = [
     },
     {
         id: "luma",
-        name: "Luma | Aconselhadora emocional",
+        name: "Luma - Aconselhadora emocional",
         role: "Aconselhadora emocional",
         avatar: "assets/luma.webp",
         instanceName: "LUMA-ACONSELHADORA",
