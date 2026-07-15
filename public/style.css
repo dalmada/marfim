@@ -281,7 +281,7 @@ body {
     display: flex;
     flex-direction: column;
     padding: 2rem;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 /* --- USER PROFILE BAR --- */
