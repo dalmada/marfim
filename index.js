@@ -53,6 +53,14 @@ const agents = [
         avatar: "assets/meca.png",
         instanceName: "MECA-ORIENTADOR",
         webhookUrl: "https://n8n.dalmada.eu/webhook/meca-homolog" // Webhook no n8n
+    },
+    {
+        id: "bete",
+        name: "Bete - Apoio pedagógico",
+        role: "Apoio pedagógico",
+        avatar: "assets/bete.webp",
+        instanceName: "BETE-PEDAGOGA",
+        webhookUrl: "https://n8n.dalmada.eu/webhook/bete-homolog"
     }
 ];
 
