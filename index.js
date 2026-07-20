@@ -23,11 +23,19 @@ const mediaCache = new Map();
 // --- Configuração dos Agentes ---
 const agents = [
     {
-        id: "vera",
-        name: "Vera Anti-Golpes",
+        id: "vera-pt",
+        name: "🇧🇷 Vera Anti-Golpes",
         role: "Orientador Anti-Golpes",
         avatar: "assets/vera-antigolpes.png",
-        instanceName: "VERA-ANTIGOLPES",
+        instanceName: "VERA-ANTIGOLPES-PT",
+        webhookUrl: "https://n8n.dalmada.eu/webhook/vera-homolog" // Webhook no n8n
+    },
+    {
+        id: "vera-en",
+        name: "🇬🇧 Vera Anti-Scam",
+        role: "Anti-Scam Advisor",
+        avatar: "assets/vera-antigolpes.png",
+        instanceName: "VERA-ANTIGOLPES-EN",
         webhookUrl: "https://n8n.dalmada.eu/webhook/vera-homolog" // Webhook no n8n
     },
     {
