@@ -361,11 +361,15 @@ body {
 }
 
 @media (max-width: 768px) {
+    body {
+        align-items: flex-start;
+    }
     .agents-grid {
         grid-template-columns: repeat(2, 1fr);
     }
     .home-container {
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 
