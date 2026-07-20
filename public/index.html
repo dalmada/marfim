@@ -67,17 +67,31 @@
     <!-- Tela do Chat (Oculta por padrão) -->
     <main class="chat-container" id="chat-view" style="display: none;">
         <header class="chat-header">
-            <button class="icon-btn back-btn" id="back-btn" aria-label="Voltar para a Home">
-                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
+            <div class="chat-header-left">
+                <button class="icon-btn back-btn" id="back-btn" aria-label="Voltar para a Home">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <img src="" alt="Avatar do Agente" class="agent-avatar" id="current-agent-avatar" style="display: none;">
+                <div class="agent-info">
+                    <h1 id="current-agent-name">
+                        <span id="agent-name-text">Agente de IA</span>
+                        <svg class="verified-icon" viewBox="0 0 24 24" width="16" height="16" fill="#00A884" style="margin-left: 4px;">
+                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"/>
+                        </svg>
+                    </h1>
+                    <span class="status">Conta comercial</span>
+                </div>
+            </div>
+            <button class="icon-btn menu-btn" aria-label="Menu">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="currentColor">
+                    <circle cx="12" cy="5" r="1.5"></circle>
+                    <circle cx="12" cy="12" r="1.5"></circle>
+                    <circle cx="12" cy="19" r="1.5"></circle>
                 </svg>
             </button>
-            <img src="" alt="Avatar do Agente" class="agent-avatar" id="current-agent-avatar" style="display: none;">
-            <div class="agent-info">
-                <h1 id="current-agent-name">Agente de IA</h1>
-                <span class="status">Online</span>
-            </div>
         </header>
 
         <section class="chat-messages" id="chat-messages" aria-live="polite" aria-label="Histórico de mensagens">

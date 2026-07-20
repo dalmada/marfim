@@ -149,7 +149,12 @@ async function openAgentChat(agent) {
     currentAgent = agent;
 
     // Update Header
-    currentAgentName.textContent = agent.name;
+    const agentNameText = document.getElementById('agent-name-text');
+    if (agentNameText) {
+        agentNameText.textContent = agent.name;
+    } else {
+        currentAgentName.textContent = agent.name;
+    }
     currentAgentAvatar.src = agent.avatar;
     currentAgentAvatar.style.display = 'block';
 
