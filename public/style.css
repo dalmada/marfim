@@ -482,7 +482,7 @@ body {
 .chat-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
 .chat-header-left {
@@ -521,11 +521,7 @@ body {
     text-align: left;
 }
 
-.menu-btn {
-    width: 40px;
-    height: 40px;
-    color: inherit;
-}
+
 
 .mobile-break {
     display: none;
