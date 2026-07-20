@@ -364,6 +364,9 @@ body {
     .agents-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+    .home-container {
+        overflow-y: auto;
+    }
 }
 
 @media (max-width: 480px) {
