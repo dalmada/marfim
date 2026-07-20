@@ -40,7 +40,7 @@ const agents = [
     },
     {
         id: "nati",
-        name: "Nati - Consultora Nutricional",
+        name: "🇧🇷 Nati - Consultora Nutricional",
         role: "Consultora Nutricional",
         avatar: "assets/nati.webp",
         instanceName: "NATI-CONSULTORA",
@@ -48,7 +48,7 @@ const agents = [
     },
     {
         id: "luma",
-        name: "Luma - Aconselhadora emocional",
+        name: "🇧🇷 Luma - Aconselhadora emocional",
         role: "Aconselhadora emocional",
         avatar: "assets/luma.webp",
         instanceName: "LUMA-ACONSELHADORA",
@@ -56,7 +56,7 @@ const agents = [
     },
     {
         id: "meca",
-        name: "Meca - Orientador Veicular",
+        name: "🇧🇷 Meca - Orientador Veicular",
         role: "Orientador Veicular",
         avatar: "assets/meca.png",
         instanceName: "MECA-ORIENTADOR",
@@ -64,7 +64,7 @@ const agents = [
     },
     {
         id: "bete",
-        name: "Bete - Apoio pedagógico",
+        name: "🇧🇷 Bete - Apoio pedagógico",
         role: "Apoio pedagógico",
         avatar: "assets/bete.webp",
         instanceName: "BETE-PEDAGOGA",
